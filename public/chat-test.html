@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Socket.IO One-to-One Chat Test</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, button { margin: 5px 0; padding: 8px; width: 100%; }
+    #messages { border: 1px solid #ccc; padding: 10px; height: 200px; overflow-y: auto; }
+    .msg { margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+
+  <h2>Socket.IO Chat Test</h2>
+
+  <!-- USER JOIN -->
+  <input type="number" id="userId" placeholder="Enter Your User ID" />
+  <button onclick="joinChat()">Join Chat</button>
+
+  <hr />
+
+  <!-- SEND MESSAGE -->
+  <input type="number" id="receiverId" placeholder="Receiver User ID" />
+  <input type="text" id="message" placeholder="Message" />
+  <button onclick="sendMessage()">Send Message</button>
+
+  <hr />
+
+  <!-- MESSAGES -->
+  <h3>Messages</h3>
+  <div id="messages"></div>
+
+  <script>
+    const socket = io("http://localhost:9000");
+
+    // join user
+    function joinChat() {
+      const userId = document.getElementById("userId").value;
+      if (!userId) return alert("Enter userId");
+
+      socket.emit("join", Number(userId));
+      alert("Joined as user " + userId);
+    }
+
+    // send message
+    function sendMessage() {
+      const receiverId = document.getElementById("receiverId").value;
+      const message = document.getElementById("message").value;
+
+      if (!receiverId || !message) {
+        return alert("ReceiverId and message required");
+      }
+
+      socket.emit("send_message", {
+        senderId: Number(document.getElementById("userId").value),
+        receiverId: Number(receiverId),
+        message
+      });
+
+      document.getElementById("message").value = "";
+    }
+
+    // receive message
+    socket.on("receive_message", (data) => {
+      const div = document.createElement("div");
+      div.className = "msg";
+      div.innerText = `From ${data.senderId}: ${data.message}`;
+      document.getElementById("messages").appendChild(div);
+    });
+  </script>
+
+</body>
+</html>
